@@ -5,18 +5,25 @@ import pickle
 import matplotlib.pyplot as plt
 from tensorflow.keras.applications import MobileNetV2
 from predict import predict
+import os
 
 # ------------------------------
 # Load Models
 # ------------------------------
 @st.cache_resource
 def load_all_models():
-    le = pickle.load(open("label_encoder.pkl", "rb"))
-    scaler = pickle.load(open("scaler.pkl", "rb"))
-    svm = pickle.load(open("svm_model.pkl", "rb"))
-    rf = pickle.load(open("rf_model.pkl", "rb"))
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    le = pickle.load(open(os.path.join(BASE_DIR, "label_encoder.pkl"), "rb"))
+    scaler = pickle.load(open(os.path.join(BASE_DIR, "scaler.pkl"), "rb"))
+    svm = pickle.load(open(os.path.join(BASE_DIR, "svm_model.pkl"), "rb"))
+    rf = pickle.load(open(os.path.join(BASE_DIR, "rf_model.pkl"), "rb"))
+
     base_model = MobileNetV2(weights="imagenet", include_top=False, pooling="avg")
+
     return le, scaler, svm, rf, base_model
+
 
 le, scaler, svm, rf, base_model = load_all_models()
 
@@ -88,7 +95,10 @@ if uploaded:
         top_class = le.inverse_transform([top_idx[0]])[0]
         top_prob = probs[top_idx[0]] * 100
 
-        st.markdown(f"<div class='result-box'>🌱 <b>Disease:</b> {top_class}<br>📊 <b>Confidence:</b> {top_prob:.2f}%</div>", unsafe_allow_html=True)
+        st.markdown(
+            f"<div class='result-box'>🌱 <b>Disease:</b> {top_class}<br>📊 <b>Confidence:</b> {top_prob:.2f}%</div>",
+            unsafe_allow_html=True
+        )
 
         # ------------------------------
         # Probability Bar Chart
